@@ -28,7 +28,7 @@ import java.util.*;
  *
  * @author S. Kralisch
  */
-public class JAMSLongArray implements Attribute.LongArray {
+public class JAMSLongArray implements JAMSData {
 
     private long[] value;
 

@@ -1,5 +1,5 @@
 /*
- * GUIComponent.java
+ * JAMSGUIComponent.java
  * Created on 17. Juni 2006, 21:34
  *
  * This file is part of JAMS
@@ -29,9 +29,8 @@ import javax.swing.JPanel;
  *
  * @author S. Kralisch
  */
-public abstract class JAMSGUIComponent extends JAMSComponent implements GUIComponent {
+public abstract class JAMSGUIComponent extends JAMSComponent {
 
-    @Override
     public abstract JPanel getPanel();
-
+    
 }

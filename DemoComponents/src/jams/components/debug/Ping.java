@@ -51,10 +51,10 @@ title="Ping",
     }
     
     public void run() {
-        getModel().getRuntime().println(getInstanceName() + "@run (" + (++runCounter) + ")", JAMS.VERBOSE);
+        getModel().getRuntime().println(getInstanceName() + "@run (" + (++runCounter) + ")", JAMS.VERBOSE);        
     }
     
     public void cleanup() {
-        getModel().getRuntime().println(getInstanceName() + "@cleanup (" + (++cleanupCounter) + ")", JAMS.VERBOSE);
+        getModel().getRuntime().println(getInstanceName() + "@cleanup (" + (++cleanupCounter) + ")", JAMS.VERBOSE);        
     }
 }

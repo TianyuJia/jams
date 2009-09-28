@@ -38,6 +38,7 @@ import org.jfree.data.xy.*;
 import org.jfree.util.ShapeUtilities.*;
 
 import jams.data.JAMSCalendar;
+import jams.gui.GUIHelper;
 
 
 public class GraphProperties {

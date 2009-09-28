@@ -23,7 +23,16 @@
 package jams;
 
 import java.awt.Font;
+import java.io.*;
+import javax.swing.UIManager;
+import jams.gui.JAMSFrame;
+import jams.gui.JAMSSplash;
+import jams.runtime.*;
+import jams.io.*;
+import java.util.Locale;
 import java.util.ResourceBundle;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -71,4 +80,195 @@ public class JAMS {
      */
     public static final String DEFAULT_PARAMETER_FILENAME = "default.jap";
 
+    private JAMSCmdLine cmdLine;
+
+    private static File baseDir = new File(System.getProperty("user.dir"));
+
+    protected int splashTimeout;
+
+    protected JAMSProperties properties;
+
+    /**
+     * JAMS contructor
+     * @param cmdLine A JAMSCmdLine object containing the command line arguments
+     */
+    public JAMS(JAMSCmdLine cmdLine) {
+
+        this.cmdLine = cmdLine;
+
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception lnfe) {
+            try {
+                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+            } catch (Exception ex) {
+                handle(ex);
+            }
+        }
+
+        //create a JAMS default set of property values
+        properties = JAMSProperties.createJAMSProperties();
+
+        //try to load property values from file
+        if (cmdLine.getConfigFileName() != null) {
+            //check for file provided at command line
+            try {
+                properties.load(cmdLine.getConfigFileName());
+            } catch (IOException ioe) {
+                System.out.println(JAMS.resources.getString("Error_while_loading_config_from") + cmdLine.getConfigFileName());
+                handle(ioe);
+            }
+            baseDir = new File(cmdLine.getConfigFileName()).getParentFile();
+        } else {
+            //check for default file
+            String defaultFile = System.getProperty("user.dir") + System.getProperty("file.separator") + JAMS.DEFAULT_PARAMETER_FILENAME;
+            File file = new File(defaultFile);
+            if (file.exists()) {
+                try {
+                    properties.load(defaultFile);
+                } catch (IOException ioe) {
+                    System.out.println(JAMS.resources.getString("Error_while_loading_config_from") + defaultFile);
+                    handle(ioe);
+                }
+            }
+        }
+
+        // check if a different locale is forced by the config
+        String forcedLocale = properties.getProperty("forcelocale");
+        if (!JAMSTools.isEmptyString(forcedLocale)) {
+            Locale.setDefault(new Locale(forcedLocale));
+            resources = java.util.ResourceBundle.getBundle("resources/JAMSBundle");
+        }
+
+        splashTimeout = Integer.parseInt(properties.getProperty("splashtimeout", "1000"));
+
+        int guiConfig = Integer.parseInt(properties.getProperty("guiconfig", "0"));
+        String modelFileName = cmdLine.getModelFileName();
+
+        // check if there is a model file provided
+        if ((modelFileName == null)) {
+
+            //check if at least GUI is enabled
+            if (guiConfig == 1) {
+                startGUI();
+            } else {
+                System.out.println(JAMS.resources.getString("You_must_provide_a_model_file_name_(see_JAMS_--help)_when_disabling_GUI_config!"));
+                System.exit(-1);
+            }
+
+        } else {
+
+            String cmdLineParameterValues = cmdLine.getParameterValues();
+
+            // if there is a model file, check if the user wants to use GUI
+            if (guiConfig == 1) {
+
+                try {
+                    startGUI(modelFileName, cmdLineParameterValues);
+                } catch (Exception e) {
+                    JAMS.handle(e);
+                }
+
+            } else {
+
+                // if no GUI is disabled and a model file provided, then run
+                // the model directly
+
+                String info = "";
+
+                //check if file exists
+                File file = new File(modelFileName);
+                if (!file.exists()) {
+                    System.out.println(JAMS.resources.getString("Model_file_") + modelFileName + JAMS.resources.getString("_could_not_be_found_-_exiting!"));
+                    return;
+                }
+
+                // do some search and replace on the input file and create new file if necessary
+                String newModelFilename = XMLProcessor.modelDocConverter(modelFileName);
+                if (!newModelFilename.equalsIgnoreCase(modelFileName)) {
+                    info = JAMS.resources.getString("The_model_definition_in_") + modelFileName + JAMS.resources.getString("_has_been_adapted_in_order_to_meet_changes_in_the_JAMS_model_specification.The_new_definition_has_been_stored_in_") + newModelFilename + JAMS.resources.getString("_while_your_original_file_was_left_untouched.");
+                    modelFileName = newModelFilename;
+                }
+
+                String xmlString = JAMSTools.fileToString(modelFileName);
+                String[] args = JAMSTools.toArray(cmdLineParameterValues, ";");
+                if (args != null) {
+                    for (int i = 0; i < args.length; i++) {
+                        xmlString = xmlString.replaceAll("%" + i, args[i]);
+                    }
+                }
+
+                JAMSRuntime runtime = null;
+                try {
+                    Document modelDoc = XMLIO.getDocumentFromString(xmlString);
+                    runtime = new StandardRuntime();
+                    runtime.loadModel(modelDoc, properties);
+
+                    if (!info.equals("")) {
+                        runtime.println(info);
+                    }
+                    runtime.runModel();
+
+                } catch (IOException ioe) {
+                    System.out.println(JAMS.resources.getString("The_model_definition_file_") + modelFileName + JAMS.resources.getString("_could_not_be_loaded,_because:_") + ioe.toString());
+                } catch (SAXException se) {
+                    System.out.println(JAMS.resources.getString("The_model_definition_file_") + modelFileName + JAMS.resources.getString("_contained_errors!"));
+                } catch (Exception ex) {
+                    if (runtime != null) {
+                        runtime.handle(ex);
+                    } else {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
+    protected void startGUI() {
+        JAMSSplash splash = new JAMSSplash();
+        splash.show(new JAMSFrame(null, properties), splashTimeout);
+    }
+
+    protected void startGUI(String modelFileName, String cmdLineParameterValues) {
+        JAMSSplash splash = new JAMSSplash();
+        splash.show(new JAMSFrame(null, properties, modelFileName, cmdLineParameterValues), splashTimeout);
+    }
+
+    /**
+     * JAMS main method
+     * @param args The command line arguments
+     */
+    public static void main(String[] args) {
+
+        new JAMS(new JAMSCmdLine(args));
+
+    }
+
+    /**
+     * Exception handling method
+     * @param ex Exception to be handled
+     */
+    public static void handle(Throwable t) {
+        handle(t, true);
+    }
+
+    /**
+     * Exception handling method
+     * @param ex Exception to be handled
+     * @param proceed Proceed or not?
+     */
+    public static void handle(Throwable t, boolean proceed) {
+        t.printStackTrace();
+        if (!proceed) {
+            System.exit(-1);
+        }
+    }
+
+    /**
+     * Get the JAMS base directory
+     * @return The JAMS base directory
+     */
+    public static File getBaseDir() {
+        return baseDir;
+    }
 }

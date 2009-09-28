@@ -22,15 +22,15 @@
  */
 package jams.remote.client;
 
+import jams.JAMS;
 import jams.gui.JAMSSplash;
-import jamsui.JAMSCmdLine;
-import jamsui.launcher.JAMSui;
+import jams.io.JAMSCmdLine;
 
 /**
  *
  * @author Sven Kralisch
  */
-public class JAMSRemote extends JAMSui {
+public class JAMSRemote extends JAMS {
     
     public JAMSRemote(JAMSCmdLine cmdLine) {   
         super(cmdLine);
@@ -50,7 +50,7 @@ public class JAMSRemote extends JAMSui {
 
     public static void main(String[] args) {
 
-        new JAMSRemote(new JAMSCmdLine(args, JAMSui.APP_TITLE));
+        new JAMSRemote(new JAMSCmdLine(args));
 
     }
 

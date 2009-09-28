@@ -51,10 +51,10 @@ public class DSTree extends JAMSTree {
 
     private JAMSExplorer explorer;
 
-    public DSTree(JAMSExplorer explorer) {
+    public DSTree(JAMSExplorer regionalizer) {
         super();
 
-        this.explorer = explorer;
+        this.explorer = regionalizer;
         setEditable(false);
 
         JMenuItem detailItem = new JMenuItem("Zeige Daten");

@@ -4,7 +4,7 @@
  */
 package reg.gui;
 
-import jams.gui.tools.GUIHelper;
+import jams.gui.GUIHelper;
 import java.awt.Frame;
 import java.io.File;
 import java.util.ArrayList;
@@ -37,6 +37,7 @@ public abstract class DSPanel extends JPanel {
     }
 
     protected void loadData(DataMatrix m, boolean timeSeries) {
+        System.out.println("loading data");
 
         if (m == null) {
             return;

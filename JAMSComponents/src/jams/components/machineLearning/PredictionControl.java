@@ -23,11 +23,11 @@
 
 package jams.components.machineLearning;
 
-import jams.tools.JAMSTools;
 import jams.model.*;
 import jams.data.*;
 import java.util.*;
 import java.io.*;
+import jams.JAMS;
 
 /**
  *
@@ -155,7 +155,7 @@ public class PredictionControl extends JAMSComponent {
         try {
             reader = new BufferedReader(new FileReader(datafile.getValue()));
         } catch (IOException ioe) {
-            JAMSTools.handle(ioe);
+            JAMS.handle(ioe);
         }
 	String nextString = null;
 	try {
@@ -186,7 +186,7 @@ public class PredictionControl extends JAMSComponent {
 	}
 	
 	} catch (IOException ioe) {
-            JAMSTools.handle(ioe);
+            JAMS.handle(ioe);
         }
 					
 	data = new double[numOfExampl][RelevantTime*ExamplLength];

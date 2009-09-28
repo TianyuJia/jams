@@ -26,7 +26,7 @@ package jams.data;
  *
  * @author S. Kralisch
  */
-public class JAMSFloat implements Attribute.Float {
+public class JAMSFloat implements Attribute.Float, JAMSNumeric {
 
     private float value;
 

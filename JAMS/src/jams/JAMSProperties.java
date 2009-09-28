@@ -22,7 +22,6 @@
  */
 package jams;
 
-import jams.tools.JAMSTools;
 import java.io.*;
 import java.util.*;
 
@@ -30,7 +29,36 @@ import java.util.*;
  *
  * @author S. Kralisch
  */
-public class JAMSProperties extends Observable implements SystemProperties {
+public class JAMSProperties extends Observable {
+
+    /**
+     * Identifier for model value
+     */
+    public static final String MODEL_IDENTIFIER = "model";
+    /**
+     * Identifier for libraries value
+     */
+    public static final String LIBS_IDENTIFIER = "libs";
+    /**
+     * Identifier for server value
+     */
+    public static final String SERVER_IDENTIFIER = "server";
+    /**
+     * Identifier for server account value
+     */
+    public static final String SERVER_ACCOUNT_IDENTIFIER = "serveraccount";
+    /**
+     * Identifier for server password value
+     */
+    public static final String SERVER_PASSWORD_IDENTIFIER = "serverpassword";
+    /**
+     * Identifier for excludes value
+     */
+    public static final String SERVER_EXCLUDES_IDENTIFIER = "excludes";
+    /**
+     * Identifier for workspace value
+     */
+    public static final String WORKSPACE_IDENTIFIER = "workspace";
 
     private Properties properties = new Properties();
     private String defaultFilename = "";
@@ -66,7 +94,7 @@ public class JAMSProperties extends Observable implements SystemProperties {
             }
 
         } catch (Exception ex) {
-            JAMSTools.handle(ex);
+            JAMS.handle(ex);
         }
     }
 
@@ -80,7 +108,7 @@ public class JAMSProperties extends Observable implements SystemProperties {
             properties.store(new FileOutputStream(fileName), JAMS.resources.getString("JAMS_configuration_file"));
             defaultFilename = fileName;
         } catch (Exception ex) {
-            JAMSTools.handle(ex);
+            JAMS.handle(ex);
         }
     }
 
@@ -151,7 +179,7 @@ public class JAMSProperties extends Observable implements SystemProperties {
      * Creates a new JAMSProperties object
      * @return The JAMSProperties object
      */
-    public static JAMSProperties createProperties() {
+    public static JAMSProperties createJAMSProperties() {
         Properties p = new Properties();
         p.setProperty("model", "");
         p.setProperty("libs", "lib");

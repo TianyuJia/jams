@@ -19,7 +19,7 @@ import jams.data.*;
 import jams.data.Attribute.Entity.NoSuchAttributeException;
 import jams.data.JAMSEntity;
 import jams.data.JAMSEntityCollection;
-import jams.model.Component;
+import jams.model.JAMSComponent;
 import jams.model.JAMSContext;
 import jams.model.JAMSVarDescription;
 import jams.model.Snapshot;
@@ -104,7 +104,7 @@ public class HRUReducer extends JAMSContext{
         }
         runEnumerator.reset();
         while (runEnumerator.hasNext() && doRun) {
-            Component comp = runEnumerator.next();
+            JAMSComponent comp = runEnumerator.next();
             try {
                 comp.init();
             } catch (Exception e) {
@@ -114,7 +114,7 @@ public class HRUReducer extends JAMSContext{
 
         runEnumerator.reset();
         while (runEnumerator.hasNext() && doRun) {
-            Component comp = runEnumerator.next();
+            JAMSComponent comp = runEnumerator.next();
             try {
                 comp.run();
             } catch (Exception e) {
@@ -124,7 +124,7 @@ public class HRUReducer extends JAMSContext{
 
         runEnumerator.reset();
         while (runEnumerator.hasNext() && doRun) {
-            Component comp = runEnumerator.next();
+            JAMSComponent comp = runEnumerator.next();
             try {
                 comp.cleanup();
             } catch (Exception e) {
@@ -519,7 +519,7 @@ public class HRUReducer extends JAMSContext{
     //wont have 
     public void init(){ 
         try{
-            mySnapShot = (Snapshot)this.snapshot.getObject("snapshot");
+            mySnapShot = (Snapshot)this.snapshot.getObject("snapshot");            
         }catch(Exception e){
             System.out.println("Could not find snapshot attribute: " + e.toString());
         }

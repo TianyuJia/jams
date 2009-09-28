@@ -23,12 +23,12 @@
 package jams.workspace.plugins;
 
 import jams.workspace.DataReader;
-import jams.workspace.DataValue;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import jams.workspace.DefaultDataSet;
+import jams.workspace.DataSet;
+import jams.workspace.datatypes.DataValue;
 import jams.workspace.datatypes.DoubleValue;
 import jams.workspace.datatypes.LongValue;
 import jams.workspace.datatypes.ObjectValue;
@@ -51,7 +51,7 @@ public class RBISPgSQL implements DataReader {
     private int numberOfColumns = -1;
     private int[] type;
     private boolean inited = false,  cleanedup = false;
-    private DefaultDataSet[] currentData = null;
+    private DataSet[] currentData = null;            
             
     public void setUser(String user) {
         this.user = user;
@@ -74,7 +74,7 @@ public class RBISPgSQL implements DataReader {
     }
 
     @Override
-    public DefaultDataSet[] getData() {
+    public DataSet[] getData() {
         return currentData;
     }
 
@@ -91,10 +91,10 @@ public class RBISPgSQL implements DataReader {
     }
 
 
-    private DefaultDataSet[] getDBRows(long count) {
+    private DataSet[] getDBRows(long count) {
         
-        ArrayList<DefaultDataSet> data = new ArrayList<DefaultDataSet>();
-        DefaultDataSet dataSet;
+        ArrayList<DataSet> data = new ArrayList<DataSet>();
+        DataSet dataSet;
         DataValue value;
 
         try {
@@ -102,7 +102,7 @@ public class RBISPgSQL implements DataReader {
             int i = 0;
             while ((i < count) && rs.next()) {
                 i++;
-                dataSet = new DefaultDataSet(numberOfColumns);
+                dataSet = new DataSet(numberOfColumns);
 
                 for (int j = 0; j < numberOfColumns; j++) {
 
@@ -131,7 +131,7 @@ public class RBISPgSQL implements DataReader {
             System.out.println("RBISPgSQL: " + sqlex);
         }
 
-        return data.toArray(new DefaultDataSet[data.size()]);
+        return data.toArray(new DataSet[data.size()]);
     }
 
     @Override

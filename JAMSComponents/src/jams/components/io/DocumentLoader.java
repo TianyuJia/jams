@@ -8,14 +8,13 @@ package jams.components.io;
 import jams.io.*;
 import java.io.File;
 import java.io.IOException;
-import jams.tools.JAMSTools;
+import jams.JAMSTools;
 import jams.data.JAMSDocument;
 import jams.data.JAMSString;
 import jams.model.JAMSComponent;
 import jams.model.JAMSVarDescription;
 import org.xml.sax.SAXException;
 import jams.JAMS;
-import jams.tools.XMLIO;
 
 /**
  *
@@ -73,10 +72,10 @@ public class DocumentLoader extends JAMSComponent{
             } catch (IOException ioe) {                
                 return JAMS.resources.getString("The_model_definition_file_") + modelFilename + JAMS.resources.getString("_could_not_be_loaded,_because:_") + ioe.toString();
             } catch (SAXException se) {
-                return JAMS.resources.getString("The_model_definition_file_") + modelFilename + JAMS.resources.getString("_contained_errors!");
+                return JAMS.resources.getString("The_model_definition_file_") + modelFilename + JAMS.resources.getString("_contained_errors!");                
             }                        
         }catch(Exception e){
-            return JAMS.resources.getString("Can^t_load_model_file,_because_") + e.toString();
+            return JAMS.resources.getString("Can^t_load_model_file,_because_") + e.toString();            
         } 
         return null;
     }

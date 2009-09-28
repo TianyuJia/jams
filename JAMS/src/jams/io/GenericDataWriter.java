@@ -28,7 +28,6 @@ import java.util.*;
 import jams.data.*;
 import jams.runtime.RuntimeException;
 import jams.JAMS;
-import jams.tools.JAMSTools;
 
 /**
  *
@@ -54,7 +53,7 @@ public class GenericDataWriter implements Serializable{
         try {
             writer = new SerializableBufferedWriter(new FileWriter(fileName));
         } catch (IOException ioe) {
-            JAMSTools.handle(ioe);
+            JAMS.handle(ioe);
         }
     }
 
@@ -62,7 +61,7 @@ public class GenericDataWriter implements Serializable{
         try {
             writer.flush();
         } catch (IOException ioe) {
-            JAMSTools.handle(ioe);
+            JAMS.handle(ioe);
         }
     }
 
@@ -110,7 +109,7 @@ public class GenericDataWriter implements Serializable{
             writer.write(s);
             writer.newLine();
         } catch (IOException ioe) {
-            JAMSTools.handle(ioe);
+            JAMS.handle(ioe);
         }
         headerClosed = true;
         data = new ArrayList<Object>(header.size());
@@ -133,7 +132,7 @@ public class GenericDataWriter implements Serializable{
             writer.write(line);
             writer.newLine();
         } catch (IOException ioe) {
-            JAMSTools.handle(ioe);
+            JAMS.handle(ioe);
         }
     }
 
@@ -141,7 +140,7 @@ public class GenericDataWriter implements Serializable{
         try {
             writer.write(line);
         } catch (IOException ioe) {
-            JAMSTools.handle(ioe);
+            JAMS.handle(ioe);
         }
     }
 
@@ -163,7 +162,7 @@ public class GenericDataWriter implements Serializable{
                 writer.write(s);
                 writer.newLine();
             } catch (IOException ioe) {
-                JAMSTools.handle(ioe);
+                JAMS.handle(ioe);
             }
             data.clear();
         }
@@ -191,7 +190,7 @@ public class GenericDataWriter implements Serializable{
                 writer.write(s);
                 writer.newLine();
             } catch (IOException ioe) {
-                JAMSTools.handle(ioe);
+                JAMS.handle(ioe);
             }
             data.clear();
         }
@@ -202,7 +201,7 @@ public class GenericDataWriter implements Serializable{
             writer.flush();
             writer.close();
         } catch (IOException ioe) {
-            JAMSTools.handle(ioe);
+            JAMS.handle(ioe);
         }
     }
 }

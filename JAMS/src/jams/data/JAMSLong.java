@@ -26,7 +26,7 @@ package jams.data;
  *
  * @author S. Kralisch
  */
-public class JAMSLong implements Attribute.Long {
+public class JAMSLong implements Attribute.Long, JAMSNumeric {
 
     private long value;
 

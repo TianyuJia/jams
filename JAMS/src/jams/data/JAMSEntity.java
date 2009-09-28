@@ -193,12 +193,12 @@ public class JAMSEntity implements Attribute.Entity {
 
     public String getStringValue() {
         String result = "";
-        String[] names = values.keySet().toArray(new String[values.size()]);
+        Object[] names = values.keySet().toArray();
         if (names.length > 0) {
-            result += names[0] + "=" + values.get(names[0]).toString() + "f";
+            result += names[0] + "=" + values.get(names[0]) + "f";
         }
         for (int i = 1; i < names.length; i++) {
-            result += "\t" + names[i] + "=" + values.get(names[i]).toString() + "f";
+            result += "\t" + names[i] + "=" + values.get(names[i]) + "f";
         }
         return result;
     }

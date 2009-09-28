@@ -15,11 +15,10 @@ import java.util.Vector;
 import jams.data.*;
 import jams.dataaccess.DataAccessor;
 import jams.io.DataTracer.*;
-import jams.model.Component;
+import jams.model.JAMSComponent;
 import jams.model.JAMSContext;
-import jams.model.JAMSVarDescription;
 import jams.model.Snapshot;
-import jams.workspace.stores.Filter;
+import jams.model.JAMSVarDescription;
 import jams.workspace.stores.OutputDataStore;
 import java.util.regex.Matcher;
 
@@ -299,7 +298,7 @@ public abstract class Optimizer extends JAMSContext {
             @Override
             public void trace() {
                 // check for filters on other contexts first
-                for (Filter filter : store.getFilters()) {
+                for (OutputDataStore.Filter filter : store.getFilters()) {
                     String s = filter.getContext().getTraceMark();
                     Matcher matcher = filter.getPattern().matcher(s);
                     if (!matcher.matches()) {
@@ -382,7 +381,7 @@ public abstract class Optimizer extends JAMSContext {
         }        
         runEnumerator.reset();
         while (runEnumerator.hasNext() && doRun) {
-            Component comp = runEnumerator.next();
+            JAMSComponent comp = runEnumerator.next();
             try {
                 comp.init();
             } catch (Exception e) {                
@@ -393,7 +392,7 @@ public abstract class Optimizer extends JAMSContext {
 
         runEnumerator.reset();
         while (runEnumerator.hasNext() && doRun) {
-            Component comp = runEnumerator.next();
+            JAMSComponent comp = runEnumerator.next();
             try {
                 comp.run();
             } catch (Exception e) {
@@ -404,7 +403,7 @@ public abstract class Optimizer extends JAMSContext {
 
         runEnumerator.reset();
         while (runEnumerator.hasNext() && doRun) {
-            Component comp = runEnumerator.next();
+            JAMSComponent comp = runEnumerator.next();
             try {
                 comp.cleanup();
             } catch (Exception e) {

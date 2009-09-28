@@ -26,7 +26,7 @@ package jams.data;
  *
  * @author S. Kralisch
  */
-public class JAMSDouble implements Attribute.Double {
+public class JAMSDouble implements Attribute.Double, JAMSNumeric {
 
     private double value;
 

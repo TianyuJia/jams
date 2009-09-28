@@ -22,12 +22,10 @@
  */
 package jams.components.debug;
 
-import jams.data.Attribute;
 import jams.data.JAMSEntity;
 import jams.data.JAMSEntityCollection;
 import jams.data.EntityEnumerator;
 import jams.data.JAMSInteger;
-import jams.model.Component;
 import jams.model.JAMSComponent;
 import jams.model.ComponentEnumerator;
 import jams.model.JAMSContext;
@@ -44,7 +42,7 @@ public class JAMSConcurrentContext extends JAMSContext {
     @JAMSVarDescription (access = JAMSVarDescription.AccessType.READ,
                          update = JAMSVarDescription.UpdateType.RUN,
                          description = "List of spatial entities")
-    public Attribute.EntityCollection entities;
+    public JAMSEntityCollection entities;
 
     @JAMSVarDescription (access = JAMSVarDescription.AccessType.WRITE,
                          update = JAMSVarDescription.UpdateType.RUN,
@@ -57,12 +55,12 @@ public class JAMSConcurrentContext extends JAMSContext {
     public JAMSInteger maxThreads;
 
     @Override
-    public Attribute.EntityCollection getEntities() {
+    public JAMSEntityCollection getEntities() {
         return entities;
     }
 
     @Override
-    public void setEntities(Attribute.EntityCollection entities) {
+    public void setEntities(JAMSEntityCollection entities) {
         this.entities = entities;
     }
 
@@ -80,7 +78,7 @@ public class JAMSConcurrentContext extends JAMSContext {
     @Override
     public void init() {
         super.init();
-        Component[] compArray = getCompArray();
+        JAMSComponent[] compArray = getCompArray();
         tasks = new RunnableComponent[compArray.length];
         for (int i = 0; i < compArray.length; i++) {
             tasks[i] = new RunnableComponent(compArray[i]);

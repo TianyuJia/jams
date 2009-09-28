@@ -27,10 +27,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
-import jams.model.Context;
-import jams.JAMS;
 import jams.dataaccess.DataAccessor;
-import jams.workspace.stores.Filter;
+import jams.model.JAMSContext;
+import jams.JAMS;
 
 /**
  *
@@ -40,8 +39,8 @@ public abstract class AbstractTracer implements DataTracer {
 
     protected DataAccessor[] accessorObjects;
     private ArrayList<String> attributeNames;
-    protected Context context;
-    private Context[] parents;
+    protected JAMSContext context;
+    private JAMSContext[] parents;
     protected OutputDataStore store;
     private Class idClazz;
 
@@ -51,7 +50,7 @@ public abstract class AbstractTracer implements DataTracer {
      * @param store The store that should be used by the DataTracer 
      * @param idClazz The type of the ID attribute, needed for type output
      */
-    public AbstractTracer(Context context, OutputDataStore store, Class idClazz) {
+    public AbstractTracer(JAMSContext context, OutputDataStore store, Class idClazz) {
         this.context = context;
         this.store = store;
         this.idClazz = idClazz;
@@ -65,7 +64,7 @@ public abstract class AbstractTracer implements DataTracer {
 
     @Override
     public void updateDateAccessors(){
-        HashMap<String, DataAccessor> dataObjectHash = context.getDataAccessorMap();
+        HashMap<String, DataAccessor> dataObjectHash = context.getDaHash();
         ArrayList<DataAccessor> accessorObjectList = new ArrayList<DataAccessor>();
         this.attributeNames = new ArrayList<String>();
 
@@ -78,9 +77,9 @@ public abstract class AbstractTracer implements DataTracer {
         }
         this.accessorObjects = accessorObjectList.toArray(new DataAccessor[accessorObjectList.size()]);
 
-        for (Filter filter : store.getFilters()) {
+        for (OutputDataStore.Filter filter : store.getFilters()) {
 
-            Context superContext = context;
+            JAMSContext superContext = context;
             while (superContext != null) {
                 if (superContext.getInstanceName().equals(filter.getContextName())) {
                     filter.setPattern(Pattern.compile(filter.getExpression()));
@@ -108,8 +107,8 @@ public abstract class AbstractTracer implements DataTracer {
             return;
         }
 
-        Context parent = context;
-        ArrayList<Context> parentList = new ArrayList<Context>();
+        JAMSContext parent = context;
+        ArrayList<JAMSContext> parentList = new ArrayList<JAMSContext>();
         while (parent != context.getModel()) {
             parent = parent.getContext();
 
@@ -120,18 +119,18 @@ public abstract class AbstractTracer implements DataTracer {
                 parentList.add(parent);
             }
         }
-        this.parents = parentList.toArray(new Context[parentList.size()]);
+        this.parents = parentList.toArray(new JAMSContext[parentList.size()]);
 
         output("@context\n");
         output(this.context.getClass().getName() + "\t" + this.context.getInstanceName() + "\t" + context.getNumberOfIterations() + "\n");
 
         output("@ancestors\n");
-        for (Context p : this.parents) {
+        for (JAMSContext p : this.parents) {
             output(p.getClass().getName() + "\t" + p.getInstanceName() + "\t" + p.getNumberOfIterations() + "\n");
         }
 
         output("@filters\n");
-        for (Filter filter : store.getFilters()) {
+        for (OutputDataStore.Filter filter : store.getFilters()) {
             output(filter.getContextName() + "\t" + filter.getExpression() + "\n");
         }
 
@@ -184,11 +183,11 @@ public abstract class AbstractTracer implements DataTracer {
      * Output some mark at the beginning of the contexts output within it's
      * run() method. If this context has parent contexts with more than
      * one iteration, some status information of those parent contexts are
-     * provided here as well (Context::getTraceMark()).
+     * provided here as well (JAMSContext::getTraceMark()).
      */
     @Override
     public void startMark() {
-        for (Context parent : parents) {
+        for (JAMSContext parent : parents) {
             output(parent.getInstanceName() + "\t" + parent.getTraceMark() + "\n");
         }
         output("@start\n");

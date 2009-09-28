@@ -22,7 +22,7 @@
  */
 package jams.runtime.concurrent;
 
-import jams.model.Component;
+import jams.model.JAMSComponent;
 
 /**
  *
@@ -30,9 +30,9 @@ import jams.model.Component;
  */
 public class RunnableComponent implements Runnable {
 
-    private Component component;
+    private JAMSComponent component;
 
-    public RunnableComponent(Component component) {
+    public RunnableComponent(JAMSComponent component) {
         this.component = component;
     }
 

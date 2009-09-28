@@ -23,8 +23,7 @@
 package jams.model;
 
 import jams.JAMS;
-import jams.data.Attribute;
-import jams.tools.JAMSTools;
+import jams.JAMSTools;
 import jams.data.JAMSDirName;
 import jams.workspace.JAMSWorkspace;
 import jams.workspace.stores.OutputDataStore;
@@ -37,8 +36,7 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import jams.data.JAMSEntityCollection;
 import jams.runtime.JAMSRuntime;
-import jams.tools.SnapshotTools;
-import jams.workspace.InvalidWorkspaceException;
+import jams.workspace.JAMSWorkspace.InvalidWorkspaceException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
@@ -50,7 +48,7 @@ import java.util.ArrayList;
                            author = "Sven Kralisch",
                            date = "26. September 2005",
                            description = "This component represents a JAMS model which is a special type of context component")
-public class JAMSModel extends JAMSContext implements Model {
+public class JAMSModel extends JAMSContext {
 
     @JAMSVarDescription (access = JAMSVarDescription.AccessType.READ)
     public JAMSDirName workspaceDirectory = new JAMSDirName();
@@ -61,7 +59,7 @@ public class JAMSModel extends JAMSContext implements Model {
 
     public JAMSWorkspace workspace;
 
-    transient private HashMap<Component, ArrayList<Field>> nullFields;
+    transient private HashMap<JAMSComponent, ArrayList<Field>> nullFields;
 
     public JAMSModel(JAMSRuntime runtime) {
         this.runtime = runtime;
@@ -69,6 +67,10 @@ public class JAMSModel extends JAMSContext implements Model {
 
     public JAMSRuntime getRuntime() {
         return runtime;
+    }
+
+    public void setRuntime(JAMSRuntime runtime) {
+        this.runtime = runtime;
     }
 
     public String getName() {
@@ -112,7 +114,7 @@ public class JAMSModel extends JAMSContext implements Model {
         // prepare workspace
         try {
             this.setWorkspace();
-        } catch (InvalidWorkspaceException iwe) {
+        } catch (JAMSWorkspace.InvalidWorkspaceException iwe) {
             this.getRuntime().sendHalt(iwe.getMessage());
             return;
         }
@@ -128,7 +130,7 @@ public class JAMSModel extends JAMSContext implements Model {
 
         if (!getNullFields().isEmpty()) {
             getRuntime().println(JAMS.resources.getString("##############_UNDEFINED_FIELDS_####################################"), JAMS.VVERBOSE);
-            for (Component comp : getNullFields().keySet()) {
+            for (JAMSComponent comp : getNullFields().keySet()) {
                 ArrayList<Field> nf = getNullFields().get(comp);
                 if (nf.isEmpty()) {
                     continue;
@@ -144,7 +146,7 @@ public class JAMSModel extends JAMSContext implements Model {
         setupDataTracer();
     }
 
-    private boolean moveWorkspaceDirectory(String workspaceDirectory) {
+    public boolean moveWorkspaceDirectory(String workspaceDirectory) {
         setWorkspaceDirectory(workspaceDirectory);
         // create output dir
         try {
@@ -182,11 +184,11 @@ public class JAMSModel extends JAMSContext implements Model {
         return workspace.getDirectory();
     }
 
-    private File getOutputDataDirectory() {
+    public File getOutputDataDirectory() {
         return workspace.getOutputDataDirectory();
     }
 
-    private File getInputDirectory() {
+    public File getInputDirectory() {
         return workspace.getInputDirectory();
     }
 
@@ -197,45 +199,45 @@ public class JAMSModel extends JAMSContext implements Model {
         return this.workspace.getOutputDataStores(contextName);
     }
 
-    public HashMap<Component, ArrayList<Field>> getNullFields() {
+    public HashMap<JAMSComponent, ArrayList<Field>> getNullFields() {
         return nullFields;
     }
 
-    public void setNullFields(HashMap<Component, ArrayList<Field>> nullFields) {
+    public void setNullFields(HashMap<JAMSComponent, ArrayList<Field>> nullFields) {
         this.nullFields = nullFields;
     }
 
-    private void collectEntityCollections(Context currentContext, Component position, HashMap<String, Attribute.EntityCollection> collection) {
-        SnapshotTools.updateEntityData(currentContext, position);
+    private void collectEntityCollections(JAMSContext currentContext, JAMSComponent position, HashMap<String, JAMSEntityCollection> collection) {
+        currentContext.updateEntityData(position);
         collection.put(currentContext.getInstanceName(), currentContext.getEntities());
 
-        for (int i = 0; i < currentContext.getComponents().size(); i++) {
-            Component c = (Component) currentContext.getComponents().get(i);
-            if (c instanceof Context) {
-                collectEntityCollections((Context) c, position, collection);
+        for (int i = 0; i < currentContext.components.size(); i++) {
+            JAMSComponent c = (JAMSComponent) currentContext.getComponents().get(i);
+            if (c instanceof JAMSContext) {
+                collectEntityCollections((JAMSContext) c, position, collection);
             }
         }
     }
 
-    private void restoreEntityCollections(Context currentContext, HashMap<String, JAMSEntityCollection> collection) {
+    private void restoreEntityCollections(JAMSContext currentContext, HashMap<String, JAMSEntityCollection> collection) {
         JAMSEntityCollection e = collection.get(currentContext.getInstanceName());
         if (e != null) {
             currentContext.setEntities(e);
         }
-        for (int i = 0; i < currentContext.getComponents().size(); i++) {
-            Component c = (Component) currentContext.getComponents().get(i);
-            if (c instanceof Context) {
-                restoreEntityCollections((Context) c, collection);
+        for (int i = 0; i < currentContext.components.size(); i++) {
+            JAMSComponent c = (JAMSComponent) currentContext.getComponents().get(i);
+            if (c instanceof JAMSContext) {
+                restoreEntityCollections((JAMSContext) c, collection);
             }
         }
         currentContext.initAccessors();
     }
 
-    public Snapshot getModelState(boolean holdInMemory, String fileName, Component position) {
+    public Snapshot getModelState(boolean holdInMemory, String fileName, JAMSComponent position) {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         ObjectOutputStream objOut = null;
 
-        HashMap<String, Attribute.EntityCollection> contextStates = new HashMap<String, Attribute.EntityCollection>();
+        HashMap<String, JAMSEntityCollection> contextStates = new HashMap<String, JAMSEntityCollection>();
         collectEntityCollections(this.getModel(), position, contextStates);
 
         try {
@@ -245,7 +247,7 @@ public class JAMSModel extends JAMSContext implements Model {
             this.getRuntime().sendErrorMsg(JAMS.resources.getString("Unable_to_save_model_state_because,") + e.toString());
         }
 
-        return new JAMSSnapshot(holdInMemory, outStream.toByteArray(), fileName);
+        return new Snapshot(holdInMemory, outStream.toByteArray(), fileName);
     }
 
     @SuppressWarnings ("unchecked")

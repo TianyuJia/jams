@@ -4,7 +4,7 @@
  * Created on 2. September 2007, 00:40
  *
  * To change this template, choose Tools | Template Manager
- * and setWorkspace the template in the editor.
+ * and open the template in the editor.
  */
 package reg.spreadsheet;
 
@@ -36,7 +36,7 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.XYStepAreaRenderer;
 import org.jfree.chart.renderer.xy.XYStepRenderer;
 
-import jams.gui.tools.GUIHelper;
+import jams.gui.GUIHelper;
 import jams.gui.WorkerDlg;
 import jams.workspace.JAMSWorkspace;
 import java.io.BufferedReader;
@@ -179,7 +179,7 @@ public class JTSConfigurator extends JFrame {
 
     /** Creates a new instance of CTSConfigurator */
     public JTSConfigurator() {
-        /* setWorkspace CTSConf */
+        /* open CTSConf */
     }
     /*
     public CTSConfigurator(JAMSTableModel tmodel){
@@ -187,18 +187,14 @@ public class JTSConfigurator extends JFrame {
     }
      **/
 
-    public JTSConfigurator(JFrame parent, JAMSSpreadSheet sheet, JAMSExplorer explorer) {
+    public JTSConfigurator(JFrame parent, JAMSSpreadSheet sheet, JAMSExplorer regionalizer) {
 
 //        super(parent, "JAMS JTS Viewer");
         this.setParent(parent);
         this.setIconImage(parent.getIconImage());
-
-        this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        explorer.registerChild(this);
-
         setTitle("JTS Viewer");
         
-        this.workspace = explorer.getWorkspace();
+        this.workspace = regionalizer.getWorkspace();
         
         setLayout(new FlowLayout());
         Point parentloc = parent.getLocation();
@@ -228,18 +224,14 @@ public class JTSConfigurator extends JFrame {
 
     }
 
-    public JTSConfigurator(JFrame parent, JAMSSpreadSheet sheet, File templateFile, JAMSExplorer explorer) {
+    public JTSConfigurator(JFrame parent, JAMSSpreadSheet sheet, File templateFile, JAMSExplorer regionalizer) {
 
 //        super(parent, "JAMS JTS Viewer");
         this.setParent(parent);
         this.setIconImage(parent.getIconImage());
-
-        this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        explorer.registerChild(this);
-
         setTitle("JTS Viewer");
         
-        this.workspace = explorer.getWorkspace();
+        this.workspace = regionalizer.getWorkspace();
         
         setLayout(new FlowLayout());
         Point parentloc = parent.getLocation();
@@ -512,13 +504,6 @@ public class JTSConfigurator extends JFrame {
                     prop.setSeriesPaint(colorTable.get(colors[0]));
                     prop.setSeriesFillPaint(colorTable.get(colors[1]));
                     prop.setSeriesOutlinePaint(colorTable.get(colors[2]));
-
-                    prop.setStroke(SpreadsheetConstants.JTS_DEFAULT_STROKE);
-                    prop.setStrokeSlider(SpreadsheetConstants.JTS_DEFAULT_STROKE);
-                    prop.setShape(SpreadsheetConstants.JTS_DEFAULT_SHAPE, SpreadsheetConstants.JTS_DEFAULT_SHAPE_SIZE);
-                    prop.setShapeSlider(SpreadsheetConstants.JTS_DEFAULT_SHAPE_SIZE);
-
-
 
 
 
@@ -2142,17 +2127,16 @@ public class JTSConfigurator extends JFrame {
             StringTokenizer name_tokenizer = new StringTokenizer(fileID,".");
             String filename = "";
             if(name_tokenizer.hasMoreTokens()){
-                filename = name_tokenizer.nextToken()+SpreadsheetConstants.FILE_ENDING_DAT;
+                filename = name_tokenizer.nextToken()+".dat";
             }else{
-                filename = fileID+SpreadsheetConstants.FILE_ENDING_DAT;
+                filename = fileID+".dat";
             }
 //            System.out.println("output_sheet="+sheet.isOutputSheet());
             if(sheet.isOutputSheet()){
                 String[] headers_with_time = new String[headers.length+1];
                 headers_with_time[0] = "ID";
                 java.lang.System.arraycopy(headers, 0, headers_with_time, 1, headers.length);
-//                sheet.save(filename, headers_with_time);//String ID zurückgeben
-                sheet.saveAll(filename);
+                sheet.save(filename, headers_with_time);//String ID zurückgeben
                 //daten speichern im falle eines output sheets
             }
         }

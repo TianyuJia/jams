@@ -5,7 +5,7 @@
 
 package jams.components.tools;
 
-import jams.tools.JAMSTools;
+import jams.JAMSTools;
 import jams.model.*;
 import jams.data.JAMSBoolean;
 import jams.data.JAMSEntity;
@@ -84,7 +84,7 @@ public class JAMSModelSnapshot extends JAMSComponent{
             if (loadSnapshot != null && loadSnapshot.getValue()){                
                 Snapshot snapshot = null;
                 try{
-                    snapshot = (Snapshot)data.getObject("snapshot");
+                    snapshot = (Snapshot)data.getObject("snapshot");                
                 }catch(Exception e){
                     System.out.println("Entity does not contain any snapshot-data," + e.toString());
                 }

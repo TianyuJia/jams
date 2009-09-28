@@ -23,7 +23,6 @@
 
 package jams.remote.client;
 
-import jams.gui.LogViewDlg;
 import jams.remote.server.Server;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -58,14 +57,13 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import jams.JAMSProperties;
-import jams.SystemProperties;
-import jams.tools.JAMSTools;
-import jams.gui.tools.GUIHelper;
+import jams.JAMSTools;
+import jams.gui.JAMSFrame;
+import jams.gui.GUIHelper;
 import jams.gui.LogViewDlg;
-import jams.tools.XMLIO;
-import jamsui.launcher.JAMSFrame;
 import jams.gui.input.InputComponent;
 import jams.gui.input.ListInput;
+import jams.io.XMLIO;
 import org.w3c.dom.Element;
 
 /**
@@ -96,12 +94,12 @@ public class JAMSRemoteLauncher extends JAMSFrame {
     
     //private Map<Element, InputComponent> propertyInput;
     
-    public JAMSRemoteLauncher(SystemProperties properties) {
+    public JAMSRemoteLauncher(JAMSProperties properties) {
         super(null, properties);
         adapt();
     }
     
-    public JAMSRemoteLauncher(String modelFilename, SystemProperties properties, String cmdLineArgs) {
+    public JAMSRemoteLauncher(String modelFilename, JAMSProperties properties, String cmdLineArgs) {
         super(null, properties, modelFilename, cmdLineArgs);
         adapt();
     }

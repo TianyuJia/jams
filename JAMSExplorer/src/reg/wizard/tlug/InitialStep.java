@@ -6,6 +6,7 @@
 package reg.wizard.tlug;
 
 import java.util.Map;
+import java.util.Set;
 import javax.swing.JComponent;
 import org.netbeans.spi.wizard.WizardController;
 import org.netbeans.spi.wizard.WizardPanelProvider;

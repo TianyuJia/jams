@@ -27,6 +27,7 @@ import jams.workspace.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import jams.workspace.datatypes.CalendarValue;
+import jams.workspace.datatypes.DataValue;
 import jams.JAMS;
 import jams.data.Attribute;
 import jams.data.JAMSDataFactory;
@@ -195,7 +196,7 @@ public class TSDataStore extends TableDataStore {
         bufferSize = oldBufferSize;
     }
 
-    private DefaultDataSetDefinition getDSDFromDumpFile() throws IOException {
+    private DataSetDefinition getDSDFromDumpFile() throws IOException {
 
         String str;
         while ((str = dumpFileReader.readLine()) != null) {
@@ -223,7 +224,7 @@ public class TSDataStore extends TableDataStore {
             }
         }
 
-        DefaultDataSetDefinition def = new DefaultDataSetDefinition(dataTypes);
+        DataSetDefinition def = new DataSetDefinition(dataTypes);
 
         type = new int[dataTypes.size()];
         int i = 0;
@@ -310,18 +311,18 @@ public class TSDataStore extends TableDataStore {
     }
 
     @Override
-    public DefaultDataSet getNext() {
+    public DataSet getNext() {
 
         if (!hasNext()) {
             return null;
         }
 
         currentDate.add(timeUnit, timeUnitCount);
-        DefaultDataSet result;
+        DataSet result;
 
         if (this.accessMode != InputDataStore.USE_CACHE_MODE) {
 
-            result = new DefaultDataSet(positionArray.length + 1);
+            result = new DataSet(positionArray.length + 1);
             result.setData(0, calendar);
             for (int i = 0; i < dataIOArray.length; i++) {
 
@@ -342,7 +343,7 @@ public class TSDataStore extends TableDataStore {
 
                 int length = tok.countTokens();
 
-                result = new DefaultDataSet(length);
+                result = new DataSet(length);
                 result.setData(0, calendar);
 
                 // dump date since this is not evaluated!

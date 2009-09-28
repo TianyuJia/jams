@@ -22,23 +22,22 @@
  */
 package reg.gui;
 
-import jams.tools.JAMSTools;
-import jams.gui.tools.GUIHelper;
+import jams.JAMSTools;
+import jams.workspace.JAMSWorkspace.InvalidWorkspaceException;
+import java.io.FileNotFoundException;
+import reg.*;
+import jams.gui.GUIHelper;
+import jams.gui.JAMSLauncher;
 import jams.gui.PropertyDlg;
 import jams.gui.WorkerDlg;
 import jams.gui.WorkspaceDlg;
-import jams.tools.XMLIO;
-import jams.gui.JAMSLauncher;
-import jams.workspace.InvalidWorkspaceException;
+import jams.io.XMLIO;
 import jams.workspace.JAMSWorkspace;
-import reg.JAMSExplorer;
-import java.io.FileNotFoundException;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
@@ -67,10 +66,7 @@ import org.netbeans.api.wizard.WizardDisplayer;
 import org.netbeans.spi.wizard.Wizard;
 import org.w3c.dom.Document;
 import reg.spreadsheet.STPConfigurator;
-import reg.viewer.Viewer;
 import reg.wizard.tlug.ExplorerWizard;
-import reg.wizard.tlug.panels.DataDecisionPanel;
-import reg.wizard.tlug.panels.StationParamsPanel;
 
 /**
  *
@@ -85,16 +81,17 @@ public class ExplorerFrame extends JFrame {
     private JFileChooser jfc = GUIHelper.getJFileChooser();
 
     private WorkerDlg openWSDlg;
+    private MCAT5Dialog sensitivityDlg;
 
-    private Action openWSAction, openSTPAction, exitAction, editWSAction,
-            sensitivityAnalysisAction, launchModelAction, editPrefsAction,
-            reloadWSAction, launchWizardAction;
+    private Action openWSAction, openSTPAction, exitAction, editWSAction, 
+                   sensitivityAnalysisAction, launchModelAction, editPrefsAction,
+                   reloadWSAction, launchWizardAction;
 
     private JLabel statusLabel;
 
     private JSplitPane mainSplitPane;
 
-    private JTabbedPane tPane;
+    private JTabbedPane spreadSheetTabs;
 
     private JAMSExplorer explorer;
 
@@ -102,12 +99,9 @@ public class ExplorerFrame extends JFrame {
 
     private WorkspaceDlg wsDlg;
 
-    private MCAT5Toolbar mcat5ToolBar = null;
-    
-    public ExplorerFrame(JAMSExplorer explorer) {
-        this.explorer = explorer;
-        mcat5ToolBar = new MCAT5Toolbar(this);
-        init();        
+    public ExplorerFrame(JAMSExplorer regionalizer) {
+        this.explorer = regionalizer;
+        init();
     }
 
     private void init() {
@@ -122,7 +116,7 @@ public class ExplorerFrame extends JFrame {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                exit();
+                explorer.exit();
             }
         };
 
@@ -141,12 +135,12 @@ public class ExplorerFrame extends JFrame {
                 wsDlg.setVisible(explorer.getWorkspace());
             }
         };
-
+        
         sensitivityAnalysisAction = new AbstractAction("MCAT5...") {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                mcat5ToolBar.setVisible(!mcat5ToolBar.isVisible());
+                sensitivityDlg.setVisible(true);
             }
         };
 
@@ -202,21 +196,22 @@ public class ExplorerFrame extends JFrame {
         propertyDlg = new PropertyDlg(this, explorer.getProperties());
 
         openWSDlg = new WorkerDlg(this, "Opening Workspace");
-                
+        sensitivityDlg = new MCAT5Dialog();
+        
         setIconImage(new ImageIcon(ClassLoader.getSystemResource("resources/images/JAMSicon16.png")).getImage());
         setTitle(JAMSExplorer.APP_TITLE);
 
         jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         jfc.setSelectedFile(new File(System.getProperty("user.dir")));
 
-        tPane = new JTabbedPane();
+        spreadSheetTabs = new JTabbedPane();
 
         mainSplitPane = new JSplitPane();
         JSplitPane inoutSplitPane = new JSplitPane();
         mainSplitPane.setAutoscrolls(true);
         mainSplitPane.setContinuousLayout(true);
         mainSplitPane.setLeftComponent(inoutSplitPane);
-        mainSplitPane.setRightComponent(tPane);
+        mainSplitPane.setRightComponent(new JPanel());
         mainSplitPane.setDividerLocation(INOUT_PANE_WIDTH);
         mainSplitPane.setDividerSize(DIVIDER_WIDTH);
         mainSplitPane.setOneTouchExpandable(false);
@@ -250,34 +245,27 @@ public class ExplorerFrame extends JFrame {
         wsEditButton.setText("");
         wsEditButton.setToolTipText((String) editWSAction.getValue(Action.NAME));
         wsEditButton.setIcon(new ImageIcon(getClass().getResource("/resources/images/Preferences.png")));
-        toolBar.add(wsEditButton);                
-
-        if (explorer.isTlugized()) {
-            JButton launchModelButton = new JButton(launchModelAction);
-            launchModelButton.setText("");
-            launchModelButton.setToolTipText((String) launchModelAction.getValue(Action.NAME));
-            launchModelButton.setIcon(new ImageIcon(getClass().getResource("/resources/images/ModelRun.png")));
-            toolBar.add(launchModelButton);
-
-            JButton launchWizardButton = new JButton(launchWizardAction);
-            launchWizardButton.setText("");
-            launchWizardButton.setToolTipText((String) launchWizardAction.getValue(Action.NAME));
-            launchWizardButton.setIcon(new ImageIcon(getClass().getResource("/resources/images/ModelRunLauncher.png")));
-            toolBar.add(launchWizardButton);
-        }
-
+        toolBar.add(wsEditButton);
+        
         JButton sensitivityAnalysisButton = new JButton(sensitivityAnalysisAction);
         sensitivityAnalysisButton.setText("");
-        sensitivityAnalysisButton.setToolTipText((String) sensitivityAnalysisAction.getValue(Action.NAME));
+        sensitivityAnalysisButton.setToolTipText((String) editWSAction.getValue(Action.NAME));
         sensitivityAnalysisButton.setIcon(new ImageIcon(getClass().getResource("/reg/resources/images/gold.png")));
         toolBar.add(sensitivityAnalysisButton);
 
-        JPanel toolBarPanel = new JPanel();
-        toolBarPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        toolBarPanel.add(toolBar);
-        toolBarPanel.add(mcat5ToolBar);
+        JButton launchModelButton = new JButton(launchModelAction);
+        launchModelButton.setText("");
+        launchModelButton.setToolTipText((String) launchModelAction.getValue(Action.NAME));
+        launchModelButton.setIcon(new ImageIcon(getClass().getResource("/resources/images/ModelRun.png")));
+        toolBar.add(launchModelButton);
 
-        getContentPane().add(toolBarPanel, BorderLayout.NORTH);
+        JButton launchWizardButton = new JButton(launchWizardAction);
+        launchWizardButton.setText("");
+        launchWizardButton.setToolTipText((String) launchWizardAction.getValue(Action.NAME));
+        launchWizardButton.setIcon(new ImageIcon(getClass().getResource("/resources/images/ModelRunLauncher.png")));
+        toolBar.add(launchWizardButton);
+
+        getContentPane().add(toolBar, BorderLayout.NORTH);
 
         JPanel statusPanel = new JPanel();
         statusPanel.setLayout(new java.awt.BorderLayout());
@@ -287,6 +275,7 @@ public class ExplorerFrame extends JFrame {
         statusLabel.setText(JAMSExplorer.APP_TITLE + " " + JAMSExplorer.APP_VERSION);
         statusPanel.add(statusLabel, java.awt.BorderLayout.CENTER);
         getContentPane().add(statusPanel, java.awt.BorderLayout.SOUTH);
+
 
         JMenuBar mainMenu = new JMenuBar();
 
@@ -320,18 +309,35 @@ public class ExplorerFrame extends JFrame {
         setSize(Math.min(d.width, JAMSExplorer.SCREEN_WIDTH), Math.min(d.height, JAMSExplorer.SCREEN_HEIGHT));
     }
 
-    public void open(File workspaceFile) {
-        try {
-            String[] libs = JAMSTools.toArray(explorer.getProperties().getProperty("libs", ""), ";");
-            JAMSWorkspace workspace = new JAMSWorkspace(workspaceFile, explorer.getRuntime(), true);
-            workspace.setLibs(libs);
-            explorer.getDisplayManager().removeAllDisplays();
-            explorer.setWorkspace(workspace);
-            this.update();
+    public void addToTabbedPane(String title, Component comp) {
+        spreadSheetTabs.addTab(title, comp);
+        spreadSheetTabs.setSelectedComponent(comp);
+//        spreadSheetTabs.
+        updateMainPanel(spreadSheetTabs);
+    }
 
-        } catch (InvalidWorkspaceException iwe) {
-            explorer.getRuntime().handle(iwe);
+    public void showTab(Component comp) {
+        try {
+            spreadSheetTabs.setSelectedComponent(comp);
+        } catch (NullPointerException npe) {
         }
+    }
+
+    public void removeFromTabbedPane(Component comp) {
+        spreadSheetTabs.remove(comp);
+        updateMainPanel(spreadSheetTabs);
+    }
+
+    public void removeFromTabbedPane(String name) {
+//        spreadSheetTabs.remove(comp);
+        spreadSheetTabs.remove(explorer.getDisplayManager().getSpreadSheets().get(name));
+        updateMainPanel(spreadSheetTabs);
+    }
+
+    public void updateMainPanel(Component comp) {
+//        mainScroll.setViewportView(comp);
+//        mainScroll.updateUI();
+        mainSplitPane.setRightComponent(comp);
     }
 
     private void open() {
@@ -343,16 +349,19 @@ public class ExplorerFrame extends JFrame {
             openWSDlg.setTask(new Runnable() {
 
                 public void run() {
-                    open(jfc.getSelectedFile());
+
+                    String[] libs = JAMSTools.toArray(explorer.getProperties().getProperty("libs", ""), ";");
+                    try {
+                        JAMSWorkspace workspace = new JAMSWorkspace(jfc.getSelectedFile(), explorer.getRuntime(), true);
+                        workspace.setLibs(libs);
+                        explorer.open(workspace);
+                    } catch (InvalidWorkspaceException ex) {
+                        explorer.getRuntime().handle(ex);
+                    }
                 }
             });
             openWSDlg.execute();
         }
-    }
-
-    public void reset() {
-        explorer.setWorkspace(null);
-        update();
     }
 
     public void update() {
@@ -366,7 +375,7 @@ public class ExplorerFrame extends JFrame {
         } else {
             jfc.setSelectedFile(workspace.getDirectory());
             setTitle(JAMSExplorer.APP_TITLE + " [" + workspace.getDirectory().toString() + "]");
-//            updateMainPanel(new JPanel());
+            updateMainPanel(new JPanel());
             editWSAction.setEnabled(true);
             reloadWSAction.setEnabled(true);
             launchWizardAction.setEnabled(true);
@@ -375,8 +384,6 @@ public class ExplorerFrame extends JFrame {
             File modelFile = new File(workspace.getDirectory(), workspace.getModelFilename());
             if (modelFile.exists()) {
                 launchModelAction.setEnabled(true);
-            } else {
-                launchModelAction.setEnabled(false);
             }
             explorer.getDisplayManager().getTreePanel().update();
             mainSplitPane.setDividerLocation(INOUT_PANE_WIDTH);
@@ -388,7 +395,7 @@ public class ExplorerFrame extends JFrame {
         JAMSWorkspace ws = explorer.getWorkspace();
         try {
             Document modelDoc = XMLIO.getDocument(new File(ws.getDirectory(), ws.getModelFilename()).getPath());
-            JAMSLauncher launcher = new JAMSLauncher(null, explorer.getProperties(), modelDoc);
+            JAMSLauncher launcher = new JAMSLauncher(this, explorer.getProperties(), modelDoc);
             launcher.setVisible(true);
         } catch (FileNotFoundException ex) {
             explorer.getRuntime().handle(ex);
@@ -402,63 +409,14 @@ public class ExplorerFrame extends JFrame {
         try {
 
             Wizard explorerWizard = new ExplorerWizard().createWizard();
-            Map wizardSettings = (Map) WizardDisplayer.showWizard(explorerWizard,
-                    new Rectangle(20, 20, 850, 530));
+            Map wizardSettings = (Map) WizardDisplayer.showWizard (explorerWizard,
+                new Rectangle (20, 20, 850, 530));
             if (wizardSettings != null) {
                 Set keys = wizardSettings.keySet();
                 System.out.println("settings coming from wizard:");
                 for (Object key : keys) {
                     System.out.println(key + "=" + wizardSettings.get(key));
                 }
-
-                // station data -> copy the wished files
-                String dataDecision = (String) wizardSettings.get(DataDecisionPanel.KEY_DATA);
-                if (dataDecision != null && dataDecision.equals(DataDecisionPanel.VALUE_STATION)) {
-                    String computation = (String) wizardSettings.get(StationParamsPanel.KEY_COMPUTATION);
-                    // look into directory &computation and get model + output files
-                    String workSpaceDir = ws.getDirectory().getCanonicalPath();
-                    String sourceDir = workSpaceDir +
-                            File.separator + "variants" +
-                            File.separator + computation;
-                    System.out.println("sourceDir: " + sourceDir);
-
-                    // copy model file
-                    String modelSourceDir = sourceDir + File.separator + "workspace";
-                    File[] modelFiles = JAMSTools.getFiles(modelSourceDir, null);
-                    if (modelFiles == null || modelFiles.length == 0) {
-                        System.out.println("no model files found ind " + modelSourceDir);
-                    } else {
-                        File modelFile = modelFiles[0];
-                        String completeModelFileName = modelFile.getAbsolutePath();
-                        String modelFileName = modelFile.getName();
-                        System.out.println("model file found: " + completeModelFileName);
-                        String copyCommand = "cmd /c copy \"" + completeModelFileName + "\" \"" + workSpaceDir + "\" /Y";
-                        Runtime.getRuntime().exec(copyCommand);
-
-                        // copy output files
-                        String outputSourceDir = sourceDir + File.separator + "output";
-                        String outputTargetDir = workSpaceDir + File.separator + "output";
-                        File[] outputFiles = JAMSTools.getFiles(outputSourceDir, "xml");
-                        if (outputFiles == null || outputFiles.length == 0) {
-                            System.out.println("no output files found in " + outputSourceDir);
-                        } else {
-                            for (File outputFile: outputFiles) {
-                                String outputFileName = outputFile.getAbsolutePath();
-                                System.out.println("outputFile file found: " + outputFileName);
-                                copyCommand = "cmd /c copy \"" + outputFileName + "\" \"" + outputTargetDir + "\" /Y";
-                                Runtime.getRuntime().exec(copyCommand);
-                            }
-                        }
-
-                        // and now activate the new model
-                        ws.setModelFile(modelFileName);
-                        this.update();
-                        launchModel();
-
-                    } // model file found
-
-                }
-
             }
 
 
@@ -480,7 +438,7 @@ public class ExplorerFrame extends JFrame {
 
             @Override
             public void windowClosing(WindowEvent e) {
-                exit();
+                explorer.exit();
             }
 
             @Override
@@ -499,28 +457,5 @@ public class ExplorerFrame extends JFrame {
             public void windowOpened(WindowEvent e) {
             }
         });
-    }
-
-    /**
-     * @return the tPane
-     */
-    public JTabbedPane getTPane() {
-        return tPane;
-    }
-
-    private void exit() {
-
-        if (explorer.isTlugized()) {
-            Viewer.destroy();
-        }
-
-        for (Window window : explorer.getChildWindows()) {
-            window.dispose();
-        }
-
-        this.setVisible(false);
-        this.dispose();
-
-        explorer.exit();
     }
 }

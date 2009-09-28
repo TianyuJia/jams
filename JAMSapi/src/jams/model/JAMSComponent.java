@@ -24,6 +24,8 @@
 
 package jams.model;
 
+import java.io.Serializable;
+
 /**
  *
  * @author S. Kralisch
@@ -33,13 +35,13 @@ package jams.model;
         title="JAMS Component",
         author="Sven Kralisch",
         date="27. Juni 2005",
-        description="This component represents a base implementation of a " +
-        "JAMS component, which is the main model building block in JAMS")
-        public class JAMSComponent implements Component {
+        description="This component represents a JAMS component which is the " +
+        "main model building block in JAMS")
+        public class JAMSComponent implements Serializable {
     
     private String instanceName = getClass().getName();
-    private Context context = null;
-    private Model model = null;
+    private JAMSContext context = null;
+    private JAMSModel model = null;
     
     /**
      * Method to be executed at model's init stage
@@ -80,7 +82,7 @@ package jams.model;
      * @return The parent context of this component, null if this is a model
      * context
      */
-    public Context getContext() {
+    public JAMSContext getContext() {
         return context;
     }
     
@@ -88,7 +90,7 @@ package jams.model;
      * Sets the context that this component is child of
      * @param context The parent context
      */
-    public void setContext(Context context) {
+    public void setContext(JAMSContext context) {
         this.context = context;
     }
     
@@ -96,7 +98,7 @@ package jams.model;
      * Gets the JAMS model that this component belongs to
      * @return The model
      */
-    public Model getModel() {
+    public JAMSModel getModel() {
         return model;
     }
     
@@ -104,7 +106,7 @@ package jams.model;
      * Sets the JAMS model that this component belongs to
      * @param model The model
      */
-    public void setModel(Model model) {
+    public void setModel(JAMSModel model) {
         this.model = model;
     }
 }

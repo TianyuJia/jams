@@ -29,6 +29,7 @@ import jams.workspace.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import jams.workspace.datatypes.DataValue;
 import jams.workspace.DataReader;
 
 /**
@@ -157,9 +158,9 @@ public class TableDataStore extends StandardInputDataStore {
      * @return A dataset object
      */
     @Override
-    public DefaultDataSet getNext() {
+    public DataSet getNext() {
 
-        DefaultDataSet result = new DefaultDataSet(positionArray.length);
+        DataSet result = new DataSet(positionArray.length);
 
         for (int i = 0; i < dataIOArray.length; i++) {
 

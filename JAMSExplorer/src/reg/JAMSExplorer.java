@@ -22,20 +22,16 @@
  */
 package reg;
 
-import java.awt.event.WindowEvent;
 import reg.gui.ExplorerFrame;
 import jams.JAMS;
 import jams.JAMSProperties;
-import jams.SystemProperties;
-import jams.gui.tools.GUIHelper;
+import jams.JAMSTools;
+import jams.gui.GUIHelper;
 import jams.runtime.JAMSRuntime;
 import jams.runtime.StandardRuntime;
 import jams.workspace.JAMSWorkspace;
-import java.awt.Window;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.UIManager;
@@ -51,30 +47,21 @@ public class JAMSExplorer {
 
     public static final String APP_VERSION = "V0.2";
 
+    public static boolean GEOWIND_ENABLE = false;
+
     public static final int SCREEN_WIDTH = 1200, SCREEN_HEIGHT = 750;
 
     private ExplorerFrame explorerFrame;
 
     private JAMSRuntime runtime;
 
-    private SystemProperties properties;
+    private JAMSProperties properties;
 
     private DisplayManager displayManager;
 
     private JAMSWorkspace workspace;
 
-    private ArrayList<Window> childWindows = new ArrayList<Window>();
-
-    private boolean standAlone, tlugized;
-
     public JAMSExplorer(JAMSRuntime runtime) {
-        this(runtime, true, true);
-    }
-
-    public JAMSExplorer(JAMSRuntime runtime, boolean standAlone, boolean tlugized) {
-
-        this.standAlone = standAlone;
-        this.tlugized = tlugized;
 
         if (runtime == null) {
             this.runtime = new StandardRuntime();
@@ -95,7 +82,7 @@ public class JAMSExplorer {
             this.runtime = runtime;
         }
 
-        properties = JAMSProperties.createProperties();
+        properties = JAMSProperties.createJAMSProperties();
         String defaultFile = System.getProperty("user.dir") + System.getProperty("file.separator") + JAMS.DEFAULT_PARAMETER_FILENAME;
         File file = new File(defaultFile);
         if (file.exists()) {
@@ -111,23 +98,49 @@ public class JAMSExplorer {
 
     }
 
-    public static void main(String[] args) {
+    public void open(JAMSWorkspace workspace) {
+        this.workspace = workspace;
+        explorerFrame.update();
+    }
 
+    public void exit() {
+
+        if (JAMSExplorer.GEOWIND_ENABLE) {
+            Viewer.destroy();
+        }
+        explorerFrame.setVisible(false);
+        explorerFrame.dispose();
+    }
+
+    public static void main(String[] args) {
+           
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            if (GEOWIND_ENABLE) {
+                Viewer.getViewer();
+            }
         } catch (Exception evt) {
         }
 
         // create the JAMSExplorer object
-        JAMSExplorer explorer = new JAMSExplorer(null,true,true);
-        explorer.getExplorerFrame().setVisible(true);
-        if (explorer.tlugized) {
-            Viewer.getViewer();
-        }
+        JAMSExplorer explorer = new JAMSExplorer(null);
 
         if (args.length > 0) {
-            explorer.getExplorerFrame().open(new File(args[0]));
+
+            try {
+                String[] libs = JAMSTools.toArray(explorer.getProperties().getProperty("libs", ""), ";");
+                JAMSWorkspace workspace = new JAMSWorkspace(new File(args[0]), explorer.getRuntime(), true);
+                workspace.setLibs(libs);
+
+                explorer.open(workspace);
+
+            } catch (JAMSWorkspace.InvalidWorkspaceException iwe) {
+                explorer.getRuntime().sendHalt(iwe.getMessage());
+            }
         }
+
+
+        explorer.getExplorerFrame().setVisible(true);
     }
 
     /**
@@ -140,7 +153,7 @@ public class JAMSExplorer {
     /**
      * @return the properties
      */
-    public SystemProperties getProperties() {
+    public JAMSProperties getProperties() {
         return properties;
     }
 
@@ -163,63 +176,5 @@ public class JAMSExplorer {
      */
     public JAMSWorkspace getWorkspace() {
         return workspace;
-    }
-
-    public void setWorkspace(JAMSWorkspace workspace) {
-        this.workspace = workspace;
-    }
-
-    public void registerChild(Window window) {
-
-        synchronized (this) {
-            // add the window to the list
-            this.childWindows.add(window);
-
-            // make sure the window is removed from the list once it has been closed
-            window.addWindowListener(new WindowListener() {
-
-                public void windowOpened(WindowEvent e) {
-                }
-
-                public void windowClosing(WindowEvent e) {
-                }
-
-                public void windowClosed(WindowEvent e) {
-                    JAMSExplorer.this.getChildWindows().remove(e.getWindow());
-                }
-
-                public void windowIconified(WindowEvent e) {
-                }
-
-                public void windowDeiconified(WindowEvent e) {
-                }
-
-                public void windowActivated(WindowEvent e) {
-                }
-
-                public void windowDeactivated(WindowEvent e) {
-                }
-            });
-        }
-    }
-
-    /**
-     * @return the childWindows
-     */
-    public ArrayList<Window> getChildWindows() {
-        return childWindows;
-    }
-
-    public void exit() {
-        if (standAlone) {
-            System.exit(0);
-        }
-    }
-
-    /**
-     * @return the tlugized
-     */
-    public boolean isTlugized() {
-        return tlugized;
     }
 }

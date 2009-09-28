@@ -10,11 +10,11 @@
 package jams.components.optimizer;
 
 import Jama.Matrix;
-import jams.tools.JAMSTools;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Vector;
+import jams.JAMS;
 import jams.data.JAMSBoolean;
 import jams.data.JAMSDouble;
 import jams.data.JAMSInteger;
@@ -120,7 +120,7 @@ public class Sandbox extends Optimizer{
         try {
             writer = new BufferedWriter(new FileWriter(this.dirName + "/" + SampleDumpFileName.getValue()));
         } catch (IOException ioe) {
-            JAMSTools.handle(ioe);
+            JAMS.handle(ioe);
         }
     }
      

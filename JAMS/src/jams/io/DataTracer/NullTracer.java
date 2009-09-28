@@ -23,6 +23,7 @@
 package jams.io.DataTracer;
 
 import jams.dataaccess.DataAccessor;
+import java.util.HashMap;
 
 /**
  *

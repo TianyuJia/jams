@@ -29,14 +29,13 @@ import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.XYStepAreaRenderer;
 import org.jfree.chart.renderer.xy.XYStepRenderer;
-import jams.JAMSFileFilter;
-import jams.gui.tools.GUIHelper;
+import jams.io.JAMSFileFilter;
+import jams.gui.GUIHelper;
 import jams.gui.WorkerDlg;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import reg.JAMSExplorer;
 
 /**
  *
@@ -231,24 +230,71 @@ public class JXYConfigurator extends JFrame {
     JComboBox[] typechoice;
 
     JComboBox[] colorchoice;
+    /* ActionListener */
 
     ActionListener[] activationChange;
 
     JAMSSpreadSheet sheet;
 
+    /** Creates a new instance of CTSConfigurator */
+    public JXYConfigurator() {
+        /* open CXYConf */
+    }
+    /*
+    public CTSConfigurator(JAMSTableModel tmodel){
+    this.tmodel = tmodel;
+    }
+     **/
 
-    public JXYConfigurator(JAMSExplorer explorer, JAMSSpreadSheet sheet, File templateFile) {
+    public JXYConfigurator(JFrame parent, JAMSSpreadSheet sheet) {
 
-        this.setParent(explorer.getExplorerFrame());
-        this.setIconImage(explorer.getExplorerFrame().getIconImage());
+        this.setParent(parent);
+        this.setIconImage(parent.getIconImage());
         setTitle("XYPlot Viewer");
-
-        this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        explorer.registerChild(this);
+//        URL url = this.getClass().getResource("/jams/components/gui/resources/JAMSicon16.png");
+//        ImageIcon icon = new ImageIcon(url);
+//        setIconImage(icon.getImage());
 
         setLayout(new FlowLayout());
-        Point parentloc = explorer.getExplorerFrame().getLocation();
+        Point parentloc = parent.getLocation();
         setLocation(parentloc.x + 30, parentloc.y + 30);
+//        this.thisJXY = this;
+        
+        this.sheet = sheet;
+        this.table = sheet.table;
+
+        this.rows = table.getSelectedRows();
+        this.columns = table.getSelectedColumns();
+        this.graphCount = columns.length;
+        this.headers = new String[graphCount];/* hier aufpassen bei reselection xxx reselecton -> neue instanz */
+
+        d_start_changed = false;
+        d_end_changed = false;
+
+        writeSortedData(columns[0]);
+
+        //setPreferredSize(new Dimension(1024, 768));
+
+        createPanel();
+
+        pack();
+        setVisible(true);
+
+    }
+
+    public JXYConfigurator(JFrame parent, JAMSSpreadSheet sheet, File templateFile) {
+
+        this.setParent(parent);
+        this.setIconImage(parent.getIconImage());
+        setTitle("XYPlot Viewer");
+//        URL url = this.getClass().getResource("/jams/components/gui/resources/JAMSicon16.png");
+//        ImageIcon icon = new ImageIcon(url);
+//        setIconImage(icon.getImage());
+
+        setLayout(new FlowLayout());
+        Point parentloc = parent.getLocation();
+        setLocation(parentloc.x + 30, parentloc.y + 30);
+//        this.thisJXY = this;
         
         this.sheet = sheet;
         this.table = sheet.table;
@@ -272,10 +318,13 @@ public class JXYConfigurator extends JFrame {
             writeSortedData(0);
         }
 
+        //setPreferredSize(new Dimension(1024, 768));
+
         createPanel();
 
         pack();
         setVisible(true);
+
     }
 
     public void createPanel() {
@@ -2206,5 +2255,31 @@ public class JXYConfigurator extends JFrame {
     }
 }
 
+class XYRow implements Comparable<XYRow> {
 
+    double[] col;
+
+    int compare_index;
+
+    public XYRow(double[] rowdata, int compare_index) {
+        this.col = rowdata;
+        this.compare_index = compare_index;
+    }
+
+    public void setCompareIndex(int compare_index) {
+        this.compare_index = compare_index;
+    }
+
+    public int compareTo(XYRow arg) {
+
+        if (col[compare_index] < arg.col[compare_index]) {
+            return -1;
+        }
+        if (col[compare_index] > arg.col[compare_index]) {
+            return 1;
+        }
+        return 0;
+
+    }
+}
 

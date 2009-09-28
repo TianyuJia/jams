@@ -28,7 +28,6 @@ import jams.data.*;
 import jams.dataaccess.DataAccessor;
 import jams.io.DataTracer.DataTracer;
 import jams.io.DataTracer.AbstractTracer;
-import jams.workspace.stores.Filter;
 
 /**
  *
@@ -61,7 +60,7 @@ public class JAMSTemporalContext extends JAMSContext {
             public void trace() {
 
                 // check for filters on other contexts first
-                for (Filter filter : store.getFilters()) {
+                for (OutputDataStore.Filter filter : store.getFilters()) {
                     String s = filter.getContext().getTraceMark();
                     Matcher matcher = filter.getPattern().matcher(s);
                     if (!matcher.matches()) {
@@ -87,7 +86,7 @@ public class JAMSTemporalContext extends JAMSContext {
         lastValue.add(timeInterval.getTimeUnit(), -timeInterval.getTimeUnitCount());
         lastValue.add(JAMSCalendar.MILLISECOND, 1);
         if (current == null) {
-            current = JAMSDataFactory.createCalendar();
+            current = (JAMSCalendar) JAMSDataFactory.createInstance(JAMSCalendar.class, getModel().getRuntime());
         }
     }
 
@@ -107,7 +106,7 @@ public class JAMSTemporalContext extends JAMSContext {
                 }
 
                 @Override
-                public Component next() {
+                public JAMSComponent next() {
                     return null;
                 }
 
@@ -140,7 +139,7 @@ public class JAMSTemporalContext extends JAMSContext {
         }
 
         @Override
-        public Component next() {
+        public JAMSComponent next() {
             // check end of component elements list, if required switch to the next
             // timestep start with the new Component list again
             if (!ce.hasNext() && current.before(lastValue)) {

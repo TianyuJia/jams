@@ -27,7 +27,6 @@ package jams.io;
 import java.util.*;
 import java.io.*;
 import jams.JAMS;
-import jams.tools.JAMSTools;
 import jams.data.*;
 
 /**
@@ -76,7 +75,7 @@ public class GenericDataReader implements JAMSTableDataStore, Serializable {
         try {
             reader = new SerializableBufferedReader(new FileReader(fileName));
         } catch (IOException ioe) {
-            JAMSTools.handle(ioe);
+            JAMS.handle(ioe);
         }
     }
     
@@ -163,7 +162,7 @@ public class GenericDataReader implements JAMSTableDataStore, Serializable {
             try {
                 nextString = reader.readLine();
             } catch (IOException ioex) {
-                JAMSTools.handle(ioex);
+                JAMS.handle(ioex);
             }
             active = true;
         }
@@ -216,7 +215,7 @@ public class GenericDataReader implements JAMSTableDataStore, Serializable {
         try {
             reader.close();
         } catch (IOException ioe) {
-            JAMSTools.handle(ioe);
+            JAMS.handle(ioe);
         }
     }
 }

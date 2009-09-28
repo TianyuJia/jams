@@ -22,18 +22,20 @@
  */
 package reg;
 
-import jams.gui.tools.GUIHelper;
-import jams.workspace.stores.InputDataStore;
+import jams.gui.GUIHelper;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import reg.spreadsheet.JAMSSpreadSheet;
+import jams.workspace.stores.InputDataStore;
 import jams.workspace.stores.StandardInputDataStore;
 import jams.workspace.stores.TSDataStore;
 import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import reg.gui.InputDSInfoPanel;
+import reg.gui.OutputDSPanel;
 import reg.gui.TSPanel;
 import reg.gui.TreePanel;
 import reg.tree.DSTreeNode;
@@ -50,16 +52,19 @@ public class DisplayManager implements Observer {
     private TSPanel tsPanel;
 
     private TreePanel treePanel;
+    
+    private JTabbedPane spreadSheetTabs; 
 
-    private HashMap<String, JPanel> dataPanels = new HashMap<String, JPanel>();
+    private HashMap<String, JPanel> spreadSheets = new HashMap<String, JPanel>();
 
-    private JAMSExplorer explorer;
+    private JAMSExplorer regionalizer;
 
-    public DisplayManager(JAMSExplorer explorer) {
-        this.explorer = explorer;
-        treePanel = new TreePanel(explorer);
+    public DisplayManager(JAMSExplorer regionalizer) {
+        this.regionalizer = regionalizer;
+        treePanel = new TreePanel(regionalizer);
         inputDSInfoPanel = new InputDSInfoPanel();
         treePanel.getTree().addObserver(this);
+        spreadSheetTabs = new JTabbedPane();
     }
 
     // handle selection of tree nodes and show metadata
@@ -71,90 +76,90 @@ public class DisplayManager implements Observer {
         DSTreeNode node = (DSTreeNode) arg;
         if (node.getType() == DSTreeNode.INPUT_DS) {
             try {
-                StandardInputDataStore store = (StandardInputDataStore) explorer.getWorkspace().getInputDataStore(node.toString());
+                StandardInputDataStore store = (StandardInputDataStore) regionalizer.getWorkspace().getInputDataStore(node.toString());
                 inputDSInfoPanel.updateDS(store);
             } catch (Exception e) {
-                explorer.getRuntime().sendErrorMsg(e.toString());
+                regionalizer.getRuntime().sendErrorMsg(e.toString());
                 e.printStackTrace();
             }
         } else if (node.getType() == DSTreeNode.OUTPUT_DS) {
             //display info dlg
         }
-    }
 
-    public void removeAllDisplays() {
-        for (String name : dataPanels.keySet()) {
-            removeDisplay(name);
-        }
     }
-
-    public void removeDisplay(String name) {
-        JPanel panel = dataPanels.get(name);
-        explorer.getExplorerFrame().getTPane().remove(panel);
-        dataPanels.remove(name);
+    
+    public HashMap<String, JPanel> getSpreadSheets(){
+        return spreadSheets;
     }
-
+    
     public void displayDS(DSTreeNode node) {
-
-        String dsID;
-
         if (node == null) {
             return;
         }
         switch (node.getType()) {
-
             case DSTreeNode.INPUT_DS:
-
-                dsID = node.toString();
-                InputDataStore store = explorer.getWorkspace().getInputDataStore(dsID);
-
-                if (dataPanels.containsKey(dsID)) {
-
-                    JPanel panel = dataPanels.get(dsID);
-                    explorer.getExplorerFrame().getTPane().setSelectedComponent(panel);
-                    return;
-
-                }
-
+                InputDataStore store = regionalizer.getWorkspace().getInputDataStore(node.toString());
                 if (store instanceof TSDataStore) {
 
-                    JAMSSpreadSheet spreadSheet = new JAMSSpreadSheet(explorer);
+                    JAMSSpreadSheet spreadSheet = new JAMSSpreadSheet(regionalizer);
                     spreadSheet.init();
-                    spreadSheet.setID(dsID);
-                    dataPanels.put(dsID, spreadSheet);
-                    explorer.getExplorerFrame().getTPane().addTab(dsID, spreadSheet);
-                    explorer.getExplorerFrame().getTPane().setSelectedComponent(spreadSheet);
+                    spreadSheet.setID(node.toString());
+                    
+                    if(!spreadSheets.containsKey(node.toString())){
+                        
+                        spreadSheets.put(node.toString(), spreadSheet);
+                        regionalizer.getExplorerFrame().addToTabbedPane(node.toString(), spreadSheet.getPanel());
+                    }else{
+                        if(spreadSheets.get(node.toString()) instanceof JAMSSpreadSheet){
+                            spreadSheet = (JAMSSpreadSheet) spreadSheets.get(node.toString());
+                            regionalizer.getExplorerFrame().showTab(spreadSheet.getPanel());
+                        }
+                    }
+//                    spreadSheetTabs.add(node.toString(), spreadSheet.getPanel());
+//
+//                    JAMSExplorer.getExplorerFrame().updateMainPanel(spreadSheetTabs);
+//                    JAMSExplorer.getExplorerFrame().updateMainPanel(spreadSheet.getPanel());
                     try {
-                        spreadSheet.loadTSDS((TSDataStore) store, explorer.getWorkspace().getInputDirectory());
+                        spreadSheet.loadTSDS((TSDataStore) store, regionalizer.getWorkspace().getInputDirectory());
                     } catch (Exception e) {
-                        GUIHelper.showErrorDlg(explorer.getExplorerFrame(), "An error occured while trying to read from datastore \"" + store.getID() + "\"", "Error");
+                        GUIHelper.showErrorDlg(regionalizer.getExplorerFrame(), "An error occured while trying to read from datastore \"" + store.getID() + "\"", "Error");
                         e.printStackTrace();
                     }
-
                 }
                 break;
-
             case DSTreeNode.OUTPUT_DS:
-
                 FileObject fo = (FileObject) node.getUserObject();
-
-                dsID = fo.getFile().getName() + " " + fo.getFile().getParentFile().getName();
-
-                if (dataPanels.containsKey(dsID)) {
-
-                    JPanel panel = dataPanels.get(dsID);
-                    explorer.getExplorerFrame().getTPane().setSelectedComponent(panel);
-                    return;
-
-                }
-
+//                OutputDSPanel odsPanel = OutputDSPanel.createPanel(fo.getFile());
+//                JAMSExplorer.getExplorerFrame().updateMainPanel(odsPanel);
                 try {
+                    JPanel outputPanel = OutputPanelFactory.getOutputDSPanel(regionalizer, fo.getFile());
+                    if(outputPanel instanceof OutputDSPanel){
+                        OutputDSPanel odspanel = (OutputDSPanel) outputPanel;
+                        //JAMSSpreadSheet spreadsheet = odspanel.getSpreadsheet();
+                    
+//                    regionalizer.getExplorerFrame().addToTabbedPane(node.toString(),outputPanel);
+                    
+                        if(!spreadSheets.containsKey(fo.getFile().getName())){
 
-                    JPanel outputPanel = OutputPanelFactory.getOutputDSPanel(explorer, fo.getFile(), dsID);
-                    dataPanels.put(dsID, outputPanel);
-                    explorer.getExplorerFrame().getTPane().addTab(dsID, outputPanel);
-                    explorer.getExplorerFrame().getTPane().setSelectedComponent(outputPanel);
+                            spreadSheets.put(fo.getFile().getName(), odspanel);
+    //                        regionalizer.getExplorerFrame().addToTabbedPane(node.toString(), outputPanel);
+                            regionalizer.getExplorerFrame().addToTabbedPane(fo.getFile().getName(), odspanel);
+                        }else{
+                            outputPanel = spreadSheets.get(fo.getFile().getName());
+                            regionalizer.getExplorerFrame().showTab(outputPanel);
+                        }
+                        
+                    } else {
+                        if(!spreadSheets.containsKey(fo.getFile().getName())){
 
+                            spreadSheets.put(fo.getFile().getName(), outputPanel);
+    //                        regionalizer.getExplorerFrame().addToTabbedPane(node.toString(), outputPanel);
+                            regionalizer.getExplorerFrame().addToTabbedPane(fo.getFile().getName(), outputPanel);
+                        }else{
+                            regionalizer.getExplorerFrame().showTab(spreadSheets.get(fo.getFile().getName()));
+                        }
+                    }
+                    
                 } catch (FileNotFoundException ex) {
                     ex.printStackTrace();
                 } catch (IOException ex) {
@@ -183,9 +188,15 @@ public class DisplayManager implements Observer {
      */
     public TSPanel getTSPanel() {
         if (tsPanel == null) {
-            tsPanel = new TSPanel(explorer);
+            tsPanel = new TSPanel(regionalizer);
         }
-
         return tsPanel;
     }
+
+//    /**
+//     * @return the spreadSheets
+//     */
+//    public HashMap<String, JAMSSpreadSheet> getSpreadSheets() {
+//        return spreadSheets;
+//    }
 }

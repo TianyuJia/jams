@@ -14,7 +14,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Vector;
 import jams.JAMS;
-import jams.tools.JAMSTools;
 import jams.data.*;
 import jams.io.GenericDataWriter;
 import jams.model.JAMSComponentDescription;
@@ -158,11 +157,11 @@ public class GPSearch extends Optimizer {
             for (int i=0;i<sampleValue.size();i++){
                 predict[i] = sampleValue.get(i).doubleValue();
             }
-            GP.trainData = JAMSDataFactory.createEntity();
+            GP.trainData = (JAMSEntity) JAMSDataFactory.createInstance(JAMSEntity.class, getModel().getRuntime());
             GP.trainData.setObject("data",data);
             GP.trainData.setObject("predict",predict);
         
-            GP.optimizationData = JAMSDataFactory.createEntity();
+            GP.optimizationData = (JAMSEntity) JAMSDataFactory.createInstance(JAMSEntity.class, getModel().getRuntime());
             GP.optimizationData.setObject("data",data);
             GP.optimizationData.setObject("predict",predict);
                         
@@ -184,7 +183,7 @@ public class GPSearch extends Optimizer {
         try {
             writer = new BufferedWriter(new FileWriter(getModel().getWorkspaceDirectory().getPath() + "/" + file));
         } catch (IOException ioe) {
-            JAMSTools.handle(ioe);
+            JAMS.handle(ioe);
         }
                 
         for (int i=0;i<samplePoint.size();i++){           
@@ -219,7 +218,7 @@ public class GPSearch extends Optimizer {
             writer_mean = new BufferedWriter(new FileWriter(getModel().getWorkspaceDirectory().getPath() + "/" + GPmeanFile));
             writer_var = new BufferedWriter(new FileWriter(getModel().getWorkspaceDirectory().getPath() + "/" + GPvarFile));
         } catch (IOException ioe) {
-            JAMSTools.handle(ioe);
+            JAMS.handle(ioe);
         }                        
         for (int i=0;i<51;i++){
             for (int j=0;j<51;j++){
@@ -261,7 +260,7 @@ public class GPSearch extends Optimizer {
         try {
             writer_prob = new BufferedWriter(new FileWriter(getModel().getWorkspaceDirectory().getPath() + "/" + GPprobFile));
         } catch (IOException ioe) {
-            JAMSTools.handle(ioe);
+            JAMS.handle(ioe);
         }     
         GaussEffFunction function = new GaussEffFunction();
         function.GP = GP;

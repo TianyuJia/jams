@@ -9,7 +9,8 @@
 
 package jams.components.efficiencies;
 
-import jams.model.Model;
+import jams.JAMS;
+import jams.model.JAMSModel;
 
 /**
  *
@@ -30,7 +31,7 @@ public class IndexOfAgreement {
      * @param verificationData the verification data set
      * @return the calculated ioa or -9999 if an error occurs
      */    
-    public static double calc_IOA(double[] prediction, double[] validation, double pow, Model model){
+    public static double calc_IOA(double[] prediction, double[] validation, double pow, JAMSModel model){
         double ioa;
         int td_size = prediction.length;
         int vd_size = validation.length;

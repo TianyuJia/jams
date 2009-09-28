@@ -26,6 +26,7 @@ import jams.data.*;
 import jams.model.*;
 
 
+import jams.gui.GUIHelper;
 import java.text.ParseException;
 
 //import jams.components.*;

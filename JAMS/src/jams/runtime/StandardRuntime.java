@@ -50,13 +50,14 @@ import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import jams.JAMS;
-import jams.SystemProperties;
-import jams.tools.JAMSTools;
+import jams.JAMSProperties;
+import jams.JAMSTools;
 import jams.data.JAMSData;
 import jams.data.JAMSEntityCollection;
+import jams.gui.GUIHelper;
 import jams.io.ModelLoader;
 import jams.io.ParameterProcessor;
-import jams.model.GUIComponent;
+import jams.model.JAMSGUIComponent;
 import jams.model.JAMSModel;
 import org.w3c.dom.Document;
 
@@ -75,7 +76,7 @@ public class StandardRuntime extends Observable implements JAMSRuntime, Serializ
     private int debugLevel = JAMS.STANDARD;
     //private RunState runState = new RunState();
 
-    private ArrayList<GUIComponent> guiComponents = new ArrayList<GUIComponent>();
+    private ArrayList<JAMSGUIComponent> guiComponents = new ArrayList<JAMSGUIComponent>();
 
     private JButton stopButton, closeButton;
 
@@ -91,7 +92,7 @@ public class StandardRuntime extends Observable implements JAMSRuntime, Serializ
 
     private Document modelDocument = null;
 
-    private SystemProperties properties = null;
+    private JAMSProperties properties = null;
 
     String[] libs = null;
 
@@ -100,7 +101,7 @@ public class StandardRuntime extends Observable implements JAMSRuntime, Serializ
     private HashMap<String, Integer> idMap;
 
     @Override
-    public void loadModel(Document modelDocument, SystemProperties properties) {
+    public void loadModel(Document modelDocument, JAMSProperties properties) {
 
         this.modelDocument = modelDocument;
         this.properties = properties;
@@ -194,7 +195,7 @@ public class StandardRuntime extends Observable implements JAMSRuntime, Serializ
 
 //        // create IDs for all used components
 //        HashSet<Class> componentClassSet = new HashSet<Class>();
-//        for (Component component : modelLoader.getComponentRepository().values()) {
+//        for (JAMSComponent component : modelLoader.getComponentRepository().values()) {
 //            componentClassSet.add(component.getClass());
 //        }
 //
@@ -299,19 +300,22 @@ public class StandardRuntime extends Observable implements JAMSRuntime, Serializ
         frame.setIconImage(new ImageIcon(ClassLoader.getSystemResource("resources/images/JAMSicon16.png")).getImage());
         frame.setPreferredSize(new java.awt.Dimension(width, height));
 
-        ListIterator<GUIComponent> i = guiComponents.listIterator();
+        ListIterator<JAMSGUIComponent> i = guiComponents.listIterator();
         if (guiComponents.size() > 1) {
             JTabbedPane tabbedPane = new JTabbedPane();
             tabbedPane.setTabPlacement(JTabbedPane.LEFT);
 
             while (i.hasNext()) {
-                GUIComponent comp = i.next();
+                JAMSGUIComponent comp = i.next();
                 try {
                     tabbedPane.addTab(comp.getInstanceName(), comp.getPanel());
                 } catch (Throwable t) {
-                    this.sendErrorMsg(JAMS.resources.getString("Could_not_load_component") + comp.getInstanceName() +
-                            JAMS.resources.getString("Proceed_anyway?"));
                     this.handle(t, true);
+                    int result = GUIHelper.showYesNoDlg(frame, JAMS.resources.getString("Could_not_load_component") + comp.getInstanceName() +
+                            JAMS.resources.getString("Proceed_anyway?"), JAMS.resources.getString("Error"));
+                    if (result == GUIHelper.NO_OPTION) {
+                        this.setRunState(JAMSRuntime.STATE_STOP);
+                    }
                 }
             }
             frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
@@ -548,7 +552,7 @@ public class StandardRuntime extends Observable implements JAMSRuntime, Serializ
     }
 
     @Override
-    public void addGUIComponent(GUIComponent component) {
+    public void addGUIComponent(JAMSGUIComponent component) {
         guiComponents.add(component);
     }
 

@@ -11,10 +11,10 @@
 package reg.wizard.tlug.panels;
 
 import jams.data.JAMSTimeInterval;
+import jams.gui.GUIHelper;
 import jams.gui.input.InputComponent;
 import jams.gui.input.TimeintervalInput;
-import jams.JAMSFileFilter;
-import jams.gui.input.InputComponentFactory;
+import jams.io.JAMSFileFilter;
 import java.io.File;
 import java.util.Map;
 import javax.swing.JFileChooser;
@@ -94,7 +94,7 @@ public class BaseDataPanel extends javax.swing.JPanel {
         jRadioButtonJahr = new javax.swing.JRadioButton();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jIntervall = InputComponentFactory.createInputComponent(JAMSTimeInterval.class, true);
+        jIntervall = GUIHelper.createInputComponent(JAMSTimeInterval.class, true);
         
         jFileLabel.setText("Shape-File");
 
@@ -119,11 +119,9 @@ public class BaseDataPanel extends javax.swing.JPanel {
         jRegLabel.setText("Regionalisierung von");
 
         jRegCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Niederschlag", "Tmin", "Tmax", "Tmean", "Feuchtigkeit" }));
-        jRegCombo.addFocusListener(new java.awt.event.FocusListener() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                jRegComboFocusLost(evt);
-            }
-            public void focusGained(java.awt.event.FocusEvent evt) {
+        jRegCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRegComboActionPerformed(evt);
             }
         });
 
@@ -232,7 +230,7 @@ public class BaseDataPanel extends javax.swing.JPanel {
         );
     }
 
-    private void jRegComboFocusLost(java.awt.event.FocusEvent evt) {
+    private void jRegComboActionPerformed(java.awt.event.ActionEvent evt) {
         r_region = (String) jRegCombo.getSelectedItem();
         checkProblems();
 
@@ -316,11 +314,11 @@ public class BaseDataPanel extends javax.swing.JPanel {
 
     private void checkProblems() {
         if (StringUtils.isNullOrEmpty(r_shapeFileName)) {
-            controller.setProblem("Bitte Shape-File auswählen.");
+            controller.setProblem("Bitte Shape-File ausw�hlen.");
         } else {
             wizardData.put(KEY_SHAPE_FILENAME, r_shapeFileName);
             if (StringUtils.isNullOrEmpty(r_dataOrigin)) {
-                controller.setProblem("Bitte Datenherkunft auswählen.");
+                controller.setProblem("Bitte Datenherkunft ausw�hlen.");
             } else {
                 wizardData.put(KEY_DATA_ORIGIN, r_dataOrigin);
                 if (StringUtils.isNullOrEmpty(r_region)) {
@@ -329,11 +327,13 @@ public class BaseDataPanel extends javax.swing.JPanel {
                     wizardData.put(KEY_REGIONALIZATION, r_region);
 
                     int errorCode = jIntervall.getErrorCode();
+                    System.out.println("Interval-ErrorCode:" + errorCode);
                     if (errorCode>0) {
-                        controller.setProblem("Bitte Zeitintervall auswählen.");
+                        controller.setProblem("Bitte Zeitintervall ausw�hlen.");
 
                     } else {
                         r_interval = jIntervall.getValue();
+                    System.out.println("Interval-Value:" + r_interval);
                         wizardData.put(KEY_INTERVAL, r_interval);
                         if (StringUtils.isNullOrEmpty(r_aggreg)) {
                             controller.setProblem("Bitte Aggregation bestimmen.");
@@ -374,6 +374,7 @@ public class BaseDataPanel extends javax.swing.JPanel {
 
         String interval = (String) wizardData.get(KEY_INTERVAL);
         if (!StringUtils.isNullOrEmpty(interval)) {
+            System.out.println("interval from config: " + interval);
             r_interval = interval;
             ((TimeintervalInput)jIntervall).setValue(interval);
         } else {

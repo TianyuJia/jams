@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Vector;
 import java.awt.event.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -34,6 +35,10 @@ import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.XYStepAreaRenderer;
 import org.jfree.chart.renderer.xy.XYStepRenderer;
+
+import jams.io.JAMSFileFilter;
+import jams.gui.GUIHelper;
+import jams.gui.WorkerDlg;
 
 
 /**
@@ -952,11 +957,9 @@ public class JTSConfigurator extends JFrame{
                         }
         };
 
-//        WorkerDlg dlg = new WorkerDlg(this, "Plotting");
-//        dlg.setTask(r);
-//        dlg.execute();
-
-        r.run();
+        WorkerDlg dlg = new WorkerDlg(this, "Plotting");
+        dlg.setTask(r);
+        dlg.execute();
 
 
 }
@@ -1888,6 +1891,7 @@ public class JTSConfigurator extends JFrame{
 //            showHiRes();
         try{
             JFileChooser chooser = new JFileChooser(); //ACHTUNG!!!!!!!!!
+            chooser.setFileFilter(JAMSFileFilter.getEpsFilter());
             int returnVal = chooser.showSaveDialog(thisDlg);
             File file = chooser.getSelectedFile();
             jts.saveAsEPS(file);

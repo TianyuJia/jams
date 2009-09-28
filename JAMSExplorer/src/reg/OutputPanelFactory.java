@@ -39,7 +39,7 @@ import reg.spreadsheet.SpreadsheetConstants;
  */
 public class OutputPanelFactory {
 
-    public static JPanel getOutputDSPanel(JAMSExplorer explorer, File file, String id) throws FileNotFoundException, IOException {
+    public static JPanel getOutputDSPanel(JAMSExplorer regionalizer, File file) throws FileNotFoundException, IOException {
         BufferedFileReader reader = new BufferedFileReader(new FileInputStream(file));
         String line = reader.readLine();
         reader.close();
@@ -49,19 +49,21 @@ public class OutputPanelFactory {
         }
 
         if (line.startsWith("@context")) {
-            return new OutputDSPanel(explorer, file);
+            return new OutputDSPanel(regionalizer, file);
         }
 
         if (line.startsWith(SpreadsheetConstants.LOAD_HEADERS)) {
 
-            // create the spreadsheet
-            JAMSSpreadSheet spreadsheet = new JAMSSpreadSheet(explorer);
+
+        // create the spreadsheet
+            JAMSSpreadSheet spreadsheet = new JAMSSpreadSheet(regionalizer, true);
             spreadsheet.init();
             spreadsheet.load(file);
             spreadsheet.setAsOutputSheet();
-            spreadsheet.setID(id);
+            spreadsheet.setID(file.getName());
 
-            return spreadsheet;
+            return spreadsheet.getPanel();
+//            setName(file.getName());
         }
 
         return new SimpleOutputPanel(file);

@@ -22,8 +22,8 @@
  */
 package jams.workspace.stores;
 
-import jams.tools.JAMSTools;
-import jams.workspace.DefaultDataSet;
+import jams.JAMSTools;
+import jams.workspace.DataSet;
 import jams.workspace.JAMSWorkspace;
 import java.io.File;
 import java.io.IOException;
@@ -103,7 +103,7 @@ public class ShapeFileDataStore extends GeoDataStore {
     }
 
     @Override
-    public DefaultDataSet getNext() {
+    public DataSet getNext() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

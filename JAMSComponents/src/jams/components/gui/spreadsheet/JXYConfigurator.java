@@ -31,6 +31,8 @@ import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.XYStepAreaRenderer;
 import org.jfree.chart.renderer.xy.XYStepRenderer;
+import jams.io.JAMSFileFilter;
+
 
 
 
@@ -1793,6 +1795,7 @@ public class JXYConfigurator extends JFrame{
 //            showHiRes();
             try{
                 JFileChooser chooser = new JFileChooser(); //ACHTUNG!!!!!!!!!
+                chooser.setFileFilter(JAMSFileFilter.getEpsFilter());
                 int returnVal = chooser.showSaveDialog(thisDlg);
                 File file = chooser.getSelectedFile();
                 jxys.saveAsEPS(file);
